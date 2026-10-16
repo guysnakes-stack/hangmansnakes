@@ -29,7 +29,6 @@
       align-items: center;
     }
 
-    /* כותרת וניקוד */
     header {
       width: 100%;
       display: flex;
@@ -42,7 +41,6 @@
     h1 { margin: 0; font-size: 24px; color: #00ffcc; text-shadow: 0 0 10px rgba(0,255,204,0.4); }
     .score-board { font-size: 16px; font-weight: bold; color: #ffd166; }
 
-    /* אזור המשחק העליון: תמונה ותליין */
     .top-section {
       display: flex;
       gap: 20px;
@@ -52,7 +50,6 @@
       flex-wrap: wrap;
     }
 
-    /* מסגרת תמונת הנחש */
     .snake-card {
       width: 280px;
       height: 200px;
@@ -76,21 +73,19 @@
     .species-tag {
       position: absolute;
       bottom: 8px;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.8);
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: bold;
     }
 
-    /* לוח התליין (ציור) */
     #gallows-canvas {
       background: #0d151f;
       border: 1px solid #1f3548;
       border-radius: 12px;
     }
 
-    /* אותיות המילה */
     .word-container {
       display: flex;
       gap: 10px;
@@ -116,7 +111,6 @@
       width: 20px;
     }
 
-    /* סטטוס ניסיונות */
     .attempts-info {
       font-size: 16px;
       margin-bottom: 15px;
@@ -128,7 +122,6 @@
       font-size: 18px;
     }
 
-    /* מקלדת וירטואלית */
     .keyboard {
       display: flex;
       flex-direction: column;
@@ -169,12 +162,11 @@
     .key-btn.correct { background: #2ed573; color: #000; border-color: #2ed573; }
     .key-btn.wrong { background: #ff4757; color: #fff; border-color: #ff4757; }
 
-    /* הודעת ניצחון / הפסד */
     #end-modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(5, 8, 12, 0.88);
+      background: rgba(5, 8, 12, 0.9);
       z-index: 50;
       flex-direction: column;
       align-items: center;
@@ -202,12 +194,12 @@
 
 <div id="game-container">
   <header>
-    <h1>נחש את הנחש</h1>
+    <h1>נחש את הנחש (איש תלוי)</h1>
     <div class="score-board">רצף ניצחונות: <span id="streak">0</span></div>
   </header>
 
   <div class="top-section">
-    <!-- כרטיס תמונת הנחש -->
+    <!-- תמונת הנחש -->
     <div class="snake-card" id="snake-card">
       <img id="snake-image" class="snake-img" alt="נחש לזיהוי" />
       <div id="species-tag" class="species-tag">רמז: נחש</div>
@@ -217,15 +209,15 @@
     <canvas id="gallows-canvas" width="180" height="200"></canvas>
   </div>
 
-  <!-- האותיות לחשיפה -->
+  <!-- רווחים ואותיות -->
   <div class="word-container" id="word-container"></div>
 
-  <!-- מונה ניסיונות -->
+  <!-- מונה פסילות -->
   <div class="attempts-info">
     פסילות שנותרו: <span id="remaining-attempts" class="attempts-count">4</span> / 4
   </div>
 
-  <!-- מקלדת על המסך -->
+  <!-- מקלדת וירטואלית -->
   <div class="keyboard" id="keyboard"></div>
 </div>
 
@@ -233,58 +225,58 @@
 <div id="end-modal">
   <h2 id="modal-title">כל הכבוד!</h2>
   <p id="modal-desc"></p>
-  <button class="btn-action" id="next-btn" onclick="startNewRound()">לנחש הבא</button>
+  <button class="btn-action" onclick="startNewRound()">לנחש הבא</button>
 </div>
 
 <script>
 // רשימת 41 נחשי ישראל
 const SPECIES_LIST = [
   // 9 ארסיים
-  { name: "צפע מצוי", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "צפע החרמון", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "אפעה מגוון", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "שפיפון הנגב", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "עכן חרטומים", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "עכן גדול", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "עכן קטן", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "שרף עין גדי", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
-  { name: "פתן שחור", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "צפע מצוי", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "צפע החרמון", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "אפעה מגוון", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "שפיפון הנגב", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "עכן חרטומים", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "עכן גדול", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "עכן קטן", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "שרף עין גדי", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "פתן שחור", label: "ארסי ☠️", color: "#ff3838" },
 
   // 9 תת-ארסיים
-  { name: "תלום קשקשים מצוי", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "תלום קשקשים מדברי", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "ארבע קו מובהק", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "ארבע קו מצרי", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "עין חתול חברבר", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "עין חתול אפור", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "עין חתול אדמדם", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "נחש כיפה", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-  { name: "מחרוזן הטבעות", type: "mild", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "תלום קשקשים מצוי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "תלום קשקשים מדברי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "ארבע קו מובהק", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "ארבע קו מצרי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "עין חתול חברבר", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "עין חתול אפור", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "עין חתול אדמדם", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "נחש כיפה", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "מחרוזן הטבעות", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
 
   // 23 לא ארסיים
-  { name: "זעמן שחור", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "זעמן מטבעות", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "זעמן זיתני", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "זעמן יפהפה", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "זעמן דק", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "זעמן סיני", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "זעמן אוכפים", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "מטבעון מדבר", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "כרכן חלק", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "כרכן קרינים", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "נחש מים משובץ", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "חנק משריץ", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "נחש חולות חרטומן", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שחור ראש מצוי", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שחור ראש דרומי", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שלוון טלוא ראש", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שלוון קווים", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שלוון קולר", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שלוון כתמים", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שלוון אזורים", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "נחשיל מצוי", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "נחשיל חד ראש", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "נימון דק", type: "non", label: "לא ארסי 💚", color: "#2ed573" }
+  { name: "זעמן שחור", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן מטבעות", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן זיתני", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן יפהפה", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן דק", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן סיני", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן אוכפים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "מטבעון מדבר", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "כרכן חלק", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "כרכן קרינים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחש מים משובץ", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "חנק משריץ", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחש חולות חרטומן", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שחור ראש מצוי", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שחור ראש דרומי", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון טלוא ראש", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון קווים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון קולר", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון כתמים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון אזורים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחשיל מצוי", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחשיל חד ראש", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נימון דק", label: "לא ארסי 💚", color: "#2ed573" }
 ];
 
 const MAX_MISTAKES = 4;
@@ -297,32 +289,32 @@ let isRoundActive = false;
 const canvas = document.getElementById("gallows-canvas");
 const ctx = canvas.getContext("2d");
 
-// נרמול אותיות סופיות
+// נרמול אותיות סופיות כדי ש"מ" ו"ם" יחשבו אותה אות
 function normalizeChar(ch) {
   const map = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
   return map[ch] || ch;
 }
 
-// ציור התליין לפי מספר הטעויות (0 עד 4)
+// ציור תליין ב-4 שלבים
 function drawGallows(step) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = "#00ffcc";
   ctx.lineWidth = 3;
   ctx.lineCap = "round";
 
-  // שלב 0: בסיס התליין (קיים תמיד)
+  // עמוד הבסיס
   ctx.beginPath();
   ctx.moveTo(20, 180);
-  ctx.lineTo(160, 180); // קרקע
+  ctx.lineTo(160, 180);
   ctx.moveTo(50, 180);
-  ctx.lineTo(50, 20);  // עמוד אנכי
-  ctx.lineTo(120, 20); // קורה אופקית
-  ctx.lineTo(120, 45); // חבל תלייה
+  ctx.lineTo(50, 20);
+  ctx.lineTo(120, 20);
+  ctx.lineTo(120, 45);
   ctx.stroke();
 
   if (step < 1) return;
 
-  // שלב 1 (טעות 1): ראש
+  // שלב 1: ראש
   ctx.strokeStyle = "#ff4757";
   ctx.beginPath();
   ctx.arc(120, 60, 15, 0, Math.PI * 2);
@@ -330,7 +322,7 @@ function drawGallows(step) {
 
   if (step < 2) return;
 
-  // שלב 2 (טעות 2): גוף
+  // שלב 2: גוף
   ctx.beginPath();
   ctx.moveTo(120, 75);
   ctx.lineTo(120, 120);
@@ -338,26 +330,25 @@ function drawGallows(step) {
 
   if (step < 3) return;
 
-  // שלב 3 (טעות 3): שתי ידיים
+  // שלב 3: ידיים
   ctx.beginPath();
   ctx.moveTo(120, 85);
-  ctx.lineTo(95, 105); // יד שמאל
+  ctx.lineTo(95, 105);
   ctx.moveTo(120, 85);
-  ctx.lineTo(145, 105); // יד ימין
+  ctx.lineTo(145, 105);
   ctx.stroke();
 
   if (step < 4) return;
 
-  // שלב 4 (טעות 4 - פסילה): שתי רגליים
+  // שלב 4: רגליים (פסילה)
   ctx.beginPath();
   ctx.moveTo(120, 120);
-  ctx.lineTo(95, 155); // רגל שמאל
+  ctx.lineTo(95, 155);
   ctx.moveTo(120, 120);
-  ctx.lineTo(145, 155); // רגל ימין
+  ctx.lineTo(145, 155);
   ctx.stroke();
 }
 
-// יצירת מקלדת וירטואלית
 const KB_LAYOUT = [
   ["ק", "ר", "א", "ט", "ו", "ן", "ם", "פ"],
   ["ש", "ד", "ג", "כ", "ע", "י", "ח", "ל", "ך", "ף"],
@@ -388,7 +379,6 @@ function startNewRound() {
   wrongAttempts = 0;
   isRoundActive = true;
 
-  // בחירת נחש אקראי
   currentSnake = SPECIES_LIST[Math.floor(Math.random() * SPECIES_LIST.length)];
 
   // טעינת תמונה מתיקיית images/
@@ -396,11 +386,9 @@ function startNewRound() {
   const encodedName = encodeURIComponent(currentSnake.name);
   imgEl.src = `images/${encodedName}.jpg`;
   imgEl.onerror = () => {
-    // ניסיון עם סיומת גדולה אם לא נמצא
     imgEl.src = `images/${encodedName}.JPG`;
   };
 
-  // עדכון רמז סוג נחש
   const tagEl = document.getElementById("species-tag");
   tagEl.textContent = `רמז: ${currentSnake.label}`;
   tagEl.style.color = currentSnake.color;
@@ -479,12 +467,12 @@ function endRound(isWin) {
     streak++;
     title.textContent = "🏆 זיהוי מדויק!";
     title.style.color = "#00ffcc";
-    desc.textContent = `כל הכבוד! הנחש הוא אכן: ${currentSnake.name}`;
+    desc.textContent = `כל הכבוד! הנחש הוא: ${currentSnake.name}`;
   } else {
     streak = 0;
     title.textContent = "☠️ נפסלת!";
     title.style.color = "#ff4757";
-    desc.textContent = `לא נורא! הנחש בתמונה היה: ${currentSnake.name}`;
+    desc.textContent = `הנחש בתמונה היה: ${currentSnake.name}`;
     revealFullWord();
   }
 
@@ -504,7 +492,6 @@ function revealFullWord() {
   }
 }
 
-// קליטת מקשים במקלדת רגילה
 window.addEventListener("keydown", (e) => {
   if (!isRoundActive) return;
   const key = e.key;
@@ -513,7 +500,6 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-// התחלת משחק
 startNewRound();
 </script>
 </body>
