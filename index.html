@@ -22,7 +22,7 @@
       background: #080d13;
       border: 2px solid #1f3548;
       border-radius: 16px;
-      box-shadow: 0 0 35px rgba(0, 255, 204, 0.15);
+      box-shadow: 0 0 25px rgba(0, 255, 204, 0.1);
       padding: 15px;
       display: flex;
       flex-direction: column;
@@ -38,7 +38,7 @@
       padding-bottom: 10px;
       margin-bottom: 12px;
     }
-    h1 { margin: 0; font-size: 22px; color: #00ffcc; text-shadow: 0 0 10px rgba(0,255,204,0.4); }
+    h1 { margin: 0; font-size: 22px; color: #00ffcc; text-shadow: 0 0 10px rgba(0,255,204,0.3); }
     
     .header-controls {
       display: flex;
@@ -53,11 +53,8 @@
       color: #00ffcc;
       border-radius: 8px;
       padding: 5px 12px;
-      font-size: 16px;
+      font-size: 14px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .top-section {
@@ -82,7 +79,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
     .snake-img {
       width: 100%;
@@ -126,23 +123,15 @@
       font-size: 24px;
       font-weight: 900;
       color: #ffffff;
-      text-shadow: 0 0 10px rgba(0,255,204,0.7);
     }
-    .letter-slot.space {
-      border-bottom: none;
-      width: 14px;
-    }
+    .letter-slot.space { border-bottom: none; width: 14px; }
 
     .attempts-info {
       font-size: 15px;
       margin-bottom: 12px;
       color: #a8dadc;
     }
-    .attempts-count {
-      color: #ff4757;
-      font-weight: bold;
-      font-size: 17px;
-    }
+    .attempts-count { color: #ff4757; font-weight: bold; font-size: 17px; }
 
     .keyboard {
       display: flex;
@@ -151,11 +140,7 @@
       width: 100%;
       max-width: 550px;
     }
-    .kb-row {
-      display: flex;
-      justify-content: center;
-      gap: 4px;
-    }
+    .kb-row { display: flex; justify-content: center; gap: 4px; }
     .key-btn {
       flex: 1;
       max-width: 42px;
@@ -170,20 +155,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.15s ease;
       touch-action: manipulation;
     }
-    .key-btn:hover:not(:disabled) {
-      background: #00ffcc;
-      color: #05080c;
-    }
-    .key-btn:disabled {
-      opacity: 0.25;
-      cursor: not-allowed;
-      border-color: transparent;
-    }
-    .key-btn.correct { background: #2ed573 !important; color: #000 !important; border-color: #2ed573 !important; }
-    .key-btn.wrong { background: #ff4757 !important; color: #fff !important; border-color: #ff4757 !important; }
+    .key-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: transparent; }
+    .key-btn.correct { background: #2ed573 !important; color: #000 !important; }
+    .key-btn.wrong { background: #ff4757 !important; color: #fff !important; }
 
     #end-modal {
       display: none;
@@ -208,9 +184,7 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 0 20px rgba(0,255,204,0.4);
     }
-    .btn-action:hover { background: #38ef7d; }
   </style>
 </head>
 <body>
@@ -219,17 +193,16 @@
   <header>
     <h1>נחש את הנחש</h1>
     <div class="header-controls">
-      <div class="score-board">רצף ניצחונות: <span id="streak">0</span></div>
-      <button id="sound-toggle" title="השתק/הפעל קול">🔊 סאונד פעיל</button>
+      <div class="score-board">רצף: <span id="streak">0</span></div>
+      <button id="sound-toggle">🔊 סאונד</button>
     </div>
   </header>
 
   <div class="top-section">
     <div class="snake-card" id="snake-card">
-      <img id="snake-image" class="snake-img" alt="נחש לזיהוי" />
+      <img id="snake-image" class="snake-img" alt="נחש" loading="eager" />
       <div id="species-tag" class="species-tag">רמז: נחש</div>
     </div>
-
     <canvas id="gallows-canvas" width="160" height="180"></canvas>
   </div>
 
@@ -249,87 +222,70 @@
 </div>
 
 <script>
-// --- מנוע סאונד משופר כולל Audio Unlocker ל-iFrame ולנייד ---
+// --- מנוע סאונד קל משקל שאינו מעמיס על הדפדפן ---
 let audioCtx = null;
 let soundEnabled = true;
 
-function unlockAudio() {
+function getAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
-    }
+    if (AudioContextClass) audioCtx = new AudioContextClass();
   }
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
+  return audioCtx;
 }
 
-// שחרור נעילה בכל מגע/לחיצה ראשונה על המסך
-window.addEventListener('click', unlockAudio, { once: false });
-window.addEventListener('touchstart', unlockAudio, { once: false });
-window.addEventListener('keydown', unlockAudio, { once: false });
-
-function playTone(freq, type, duration, delay = 0) {
+function playTone(freq, type, duration) {
   if (!soundEnabled) return;
-  unlockAudio();
-  if (!audioCtx) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
 
-  setTimeout(() => {
-    try {
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, now);
-      
-      // ווליום מוגבר מעט כדי שישמעו בבירור
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + duration);
-    } catch(err) {
-      console.warn("Audio error:", err);
-    }
-  }, delay);
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.linearRampToValueAtTime(0.001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + duration);
+  } catch (e) {}
 }
 
 const Sounds = {
   correct: () => {
-    playTone(587.33, 'triangle', 0.10, 0);  // D5
-    playTone(880.00, 'triangle', 0.20, 70); // A5
+    playTone(600, 'sine', 0.08);
+    setTimeout(() => playTone(900, 'sine', 0.12), 60);
   },
   wrong: () => {
-    playTone(190.00, 'sawtooth', 0.16, 0);  // טון צורם
-    playTone(140.00, 'sawtooth', 0.24, 80);
+    playTone(180, 'triangle', 0.15);
   },
   win: () => {
-    playTone(523.25, 'triangle', 0.12, 0);
-    playTone(659.25, 'triangle', 0.12, 110);
-    playTone(783.99, 'triangle', 0.12, 220);
-    playTone(1046.50, 'triangle', 0.35, 330);
+    playTone(523, 'sine', 0.1);
+    setTimeout(() => playTone(659, 'sine', 0.1), 90);
+    setTimeout(() => playTone(784, 'sine', 0.2), 180);
   },
   lose: () => {
-    playTone(320.00, 'sawtooth', 0.20, 0);
-    playTone(260.00, 'sawtooth', 0.20, 140);
-    playTone(200.00, 'sawtooth', 0.40, 280);
+    playTone(250, 'triangle', 0.15);
+    setTimeout(() => playTone(180, 'triangle', 0.25), 140);
   }
 };
 
-document.getElementById("sound-toggle").addEventListener("click", (e) => {
-  e.stopPropagation();
-  unlockAudio();
+document.getElementById("sound-toggle").addEventListener("click", () => {
   soundEnabled = !soundEnabled;
-  document.getElementById("sound-toggle").textContent = soundEnabled ? "🔊 סאונד פעיל" : "🔇 סאונד כבוי";
-  if (soundEnabled) Sounds.correct(); // צליל אינדיקציה קטן
+  document.getElementById("sound-toggle").textContent = soundEnabled ? "🔊 סאונד" : "🔇 ללא קול";
 });
 
-// --- רשימת נחשי ישראל ---
+// --- רשימת המינים ---
 const SPECIES_LIST = [
-  // 9 ארסיים
   { name: "צפע מצוי", label: "ארסי ☠️", color: "#ff3838" },
   { name: "צפע החרמון", label: "ארסי ☠️", color: "#ff3838" },
   { name: "אפעה מגוון", label: "ארסי ☠️", color: "#ff3838" },
@@ -339,8 +295,6 @@ const SPECIES_LIST = [
   { name: "עכן קטן", label: "ארסי ☠️", color: "#ff3838" },
   { name: "שרף עין גדי", label: "ארסי ☠️", color: "#ff3838" },
   { name: "פתן שחור", label: "ארסי ☠️", color: "#ff3838" },
-
-  // 9 תת-ארסיים
   { name: "תלום קשקשים מצוי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "תלום קשקשים מדברי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "ארבע קו מובהק", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
@@ -350,8 +304,6 @@ const SPECIES_LIST = [
   { name: "עין חתול אדמדם", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "נחש כיפה", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "מחרוזן הטבעות", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
-
-  // 23 לא ארסיים
   { name: "זעמן שחור", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "זעמן מטבעות", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "זעמן זיתני", label: "לא ארסי 💚", color: "#2ed573" },
@@ -408,24 +360,18 @@ function drawGallows(step) {
   ctx.stroke();
 
   if (step < 1) return;
-
-  // שלב 1: ראש
   ctx.strokeStyle = "#ff4757";
   ctx.beginPath();
   ctx.arc(105, 55, 14, 0, Math.PI * 2);
   ctx.stroke();
 
   if (step < 2) return;
-
-  // שלב 2: גוף
   ctx.beginPath();
   ctx.moveTo(105, 69);
   ctx.lineTo(105, 110);
   ctx.stroke();
 
   if (step < 3) return;
-
-  // שלב 3: ידיים
   ctx.beginPath();
   ctx.moveTo(105, 80);
   ctx.lineTo(85, 98);
@@ -434,8 +380,6 @@ function drawGallows(step) {
   ctx.stroke();
 
   if (step < 4) return;
-
-  // שלב 4: רגליים
   ctx.beginPath();
   ctx.moveTo(105, 110);
   ctx.lineTo(85, 140);
@@ -461,11 +405,7 @@ function buildKeyboard() {
       btn.className = "key-btn";
       btn.id = `key-${letter}`;
       btn.textContent = letter;
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        unlockAudio();
-        handleLetterGuess(letter);
-      });
+      btn.onclick = () => handleLetterGuess(letter);
       rowDiv.appendChild(btn);
     });
     container.appendChild(rowDiv);
@@ -480,30 +420,14 @@ function startNewRound() {
 
   currentSnake = SPECIES_LIST[Math.floor(Math.random() * SPECIES_LIST.length)];
 
+  // טעינת תמונה נקייה בלבד ללא לולאות כבדות
   const imgEl = document.getElementById("snake-image");
-  const rawName = currentSnake.name;
-  const encodedName = encodeURIComponent(rawName);
-
-  const possibleUrls = [
-    `images/${encodedName}.jpg`,
-    `images/${encodedName}.JPG`,
-    `images/${rawName}.jpg`,
-    `images/${rawName}.JPG`,
-    `images/${encodedName}.jpeg`,
-    `images/${encodedName}.png`
-  ];
-
-  let attemptIdx = 0;
-  function tryNextImage() {
-    if (attemptIdx < possibleUrls.length) {
-      imgEl.src = possibleUrls[attemptIdx];
-      attemptIdx++;
-    }
-  }
-
-  imgEl.onerror = tryNextImage;
-  attemptIdx = 0;
-  tryNextImage();
+  const enc = encodeURIComponent(currentSnake.name);
+  imgEl.onerror = function() {
+    this.onerror = null;
+    this.src = `images/${enc}.JPG`;
+  };
+  imgEl.src = `images/${enc}.jpg`;
 
   const tagEl = document.getElementById("species-tag");
   tagEl.textContent = `רמז: ${currentSnake.label}`;
@@ -548,7 +472,6 @@ function updateWordDisplay() {
 
 function handleLetterGuess(letter) {
   if (!isRoundActive) return;
-  unlockAudio();
   const norm = normalizeChar(letter);
   if (guessedLetters.has(norm)) return;
 
@@ -615,7 +538,6 @@ function revealFullWord() {
 
 window.addEventListener("keydown", (e) => {
   if (!isRoundActive) return;
-  unlockAudio();
   const key = e.key;
   if (/^[א-ת]$/.test(key)) {
     handleLetterGuess(key);
