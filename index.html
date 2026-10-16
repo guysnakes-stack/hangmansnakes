@@ -52,7 +52,7 @@
       border: 1px solid #2d4a65;
       color: #00ffcc;
       border-radius: 8px;
-      padding: 5px 10px;
+      padding: 5px 12px;
       font-size: 16px;
       cursor: pointer;
       display: flex;
@@ -182,8 +182,8 @@
       cursor: not-allowed;
       border-color: transparent;
     }
-    .key-btn.correct { background: #2ed573; color: #000; border-color: #2ed573; }
-    .key-btn.wrong { background: #ff4757; color: #fff; border-color: #ff4757; }
+    .key-btn.correct { background: #2ed573 !important; color: #000 !important; border-color: #2ed573 !important; }
+    .key-btn.wrong { background: #ff4757 !important; color: #fff !important; border-color: #ff4757 !important; }
 
     #end-modal {
       display: none;
@@ -220,7 +220,7 @@
     <h1>נחש את הנחש</h1>
     <div class="header-controls">
       <div class="score-board">רצף ניצחונות: <span id="streak">0</span></div>
-      <button id="sound-toggle" title="השתק/הפעל קול">🔊</button>
+      <button id="sound-toggle" title="השתק/הפעל קול">🔊 סאונד פעיל</button>
     </div>
   </header>
 
@@ -249,66 +249,85 @@
 </div>
 
 <script>
-// --- מנוע סאונד מובנה (Web Audio API) ---
+// --- מנוע סאונד משופר כולל Audio Unlocker ל-iFrame ולנייד ---
 let audioCtx = null;
 let soundEnabled = true;
 
-function initAudio() {
+function unlockAudio() {
   if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+    }
   }
-  if (audioCtx.state === 'suspended') {
+  if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
 }
 
+// שחרור נעילה בכל מגע/לחיצה ראשונה על המסך
+window.addEventListener('click', unlockAudio, { once: false });
+window.addEventListener('touchstart', unlockAudio, { once: false });
+window.addEventListener('keydown', unlockAudio, { once: false });
+
 function playTone(freq, type, duration, delay = 0) {
   if (!soundEnabled) return;
-  initAudio();
+  unlockAudio();
+  if (!audioCtx) return;
+
   setTimeout(() => {
     try {
+      const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.frequency.setValueAtTime(freq, now);
+      
+      // ווליום מוגבר מעט כדי שישמעו בבירור
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    } catch(e) {}
+      osc.start(now);
+      osc.stop(now + duration);
+    } catch(err) {
+      console.warn("Audio error:", err);
+    }
   }, delay);
 }
 
-// 4 אפקטים קוליים
 const Sounds = {
   correct: () => {
-    playTone(523.25, 'sine', 0.12, 0);   // C5
-    playTone(659.25, 'sine', 0.20, 80);  // E5
+    playTone(587.33, 'triangle', 0.10, 0);  // D5
+    playTone(880.00, 'triangle', 0.20, 70); // A5
   },
   wrong: () => {
-    playTone(220.00, 'sawtooth', 0.18, 0);  // צליל פסילה
-    playTone(180.00, 'sawtooth', 0.25, 90);
+    playTone(190.00, 'sawtooth', 0.16, 0);  // טון צורם
+    playTone(140.00, 'sawtooth', 0.24, 80);
   },
   win: () => {
-    playTone(523.25, 'triangle', 0.15, 0);   // מנגינת ניצחון
-    playTone(659.25, 'triangle', 0.15, 120);
-    playTone(783.99, 'triangle', 0.30, 240);
+    playTone(523.25, 'triangle', 0.12, 0);
+    playTone(659.25, 'triangle', 0.12, 110);
+    playTone(783.99, 'triangle', 0.12, 220);
+    playTone(1046.50, 'triangle', 0.35, 330);
   },
   lose: () => {
-    playTone(280.00, 'sawtooth', 0.25, 0);   // מנגינת הפסד
-    playTone(240.00, 'sawtooth', 0.25, 150);
-    playTone(190.00, 'sawtooth', 0.45, 300);
+    playTone(320.00, 'sawtooth', 0.20, 0);
+    playTone(260.00, 'sawtooth', 0.20, 140);
+    playTone(200.00, 'sawtooth', 0.40, 280);
   }
 };
 
-document.getElementById("sound-toggle").addEventListener("click", () => {
+document.getElementById("sound-toggle").addEventListener("click", (e) => {
+  e.stopPropagation();
+  unlockAudio();
   soundEnabled = !soundEnabled;
-  document.getElementById("sound-toggle").textContent = soundEnabled ? "🔊" : "🔇";
+  document.getElementById("sound-toggle").textContent = soundEnabled ? "🔊 סאונד פעיל" : "🔇 סאונד כבוי";
+  if (soundEnabled) Sounds.correct(); // צליל אינדיקציה קטן
 });
 
-// --- רשימת 41 נחשי ישראל ---
+// --- רשימת נחשי ישראל ---
 const SPECIES_LIST = [
   // 9 ארסיים
   { name: "צפע מצוי", label: "ארסי ☠️", color: "#ff3838" },
@@ -444,6 +463,7 @@ function buildKeyboard() {
       btn.textContent = letter;
       btn.addEventListener("click", (e) => {
         e.preventDefault();
+        unlockAudio();
         handleLetterGuess(letter);
       });
       rowDiv.appendChild(btn);
@@ -528,6 +548,7 @@ function updateWordDisplay() {
 
 function handleLetterGuess(letter) {
   if (!isRoundActive) return;
+  unlockAudio();
   const norm = normalizeChar(letter);
   if (guessedLetters.has(norm)) return;
 
@@ -594,6 +615,7 @@ function revealFullWord() {
 
 window.addEventListener("keydown", (e) => {
   if (!isRoundActive) return;
+  unlockAudio();
   const key = e.key;
   if (/^[א-ת]$/.test(key)) {
     handleLetterGuess(key);
