@@ -50,6 +50,7 @@
       gap: 8px;
     }
     .score-board { font-size: 14px; font-weight: bold; color: #ffd166; }
+    .progress-board { font-size: 13px; font-weight: bold; color: #00ffcc; background: #121c27; padding: 4px 8px; border-radius: 6px; border: 1px solid #1f3548; }
     
     .ctrl-btn {
       background: #1a2a3a;
@@ -136,7 +137,7 @@
     }
     .attempts-count { color: #ff4757; font-weight: bold; font-size: 16px; }
 
-    /* עיצוב המקלדת */
+    /* מקלדת */
     .keyboard {
       display: flex !important;
       flex-direction: column !important;
@@ -207,6 +208,7 @@
   <header>
     <h1>נחש את הנחש</h1>
     <div class="header-controls">
+      <div class="progress-board" id="round-indicator">נחש: 1/41</div>
       <div class="score-board">רצף: <span id="streak">0</span></div>
       <button id="sound-toggle" class="ctrl-btn">🔊</button>
       <button id="fullscreen-btn" class="ctrl-btn" title="מסך מלא">⛶</button>
@@ -233,11 +235,11 @@
 <div id="end-modal">
   <h2 id="modal-title">כל הכבוד!</h2>
   <p id="modal-desc"></p>
-  <button class="btn-action" onclick="startNewRound()">לנחש הבא</button>
+  <button class="btn-action" id="modal-btn" onclick="startNewRound()">לנחש הבא</button>
 </div>
 
 <script>
-// מסך מלא מותאם למובייל
+// מסך מלא
 const fsBtn = document.getElementById("fullscreen-btn");
 const container = document.getElementById("game-container");
 let isCustomFullscreen = false;
@@ -323,6 +325,7 @@ document.getElementById("sound-toggle").addEventListener("click", () => {
 
 // רשימת 41 נחשי ישראל
 const SPECIES_LIST = [
+  // 9 ארסיים
   { name: "צפע מצוי", label: "ארסי ☠️", color: "#ff3838" },
   { name: "צפע החרמון", label: "ארסי ☠️", color: "#ff3838" },
   { name: "אפעה מגוון", label: "ארסי ☠️", color: "#ff3838" },
@@ -332,6 +335,8 @@ const SPECIES_LIST = [
   { name: "עכן קטן", label: "ארסי ☠️", color: "#ff3838" },
   { name: "שרף עין גדי", label: "ארסי ☠️", color: "#ff3838" },
   { name: "פתן שחור", label: "ארסי ☠️", color: "#ff3838" },
+
+  // 9 תת-ארסיים
   { name: "תלום קשקשים מצוי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "תלום קשקשים מדברי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "ארבע קו מובהק", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
@@ -341,6 +346,8 @@ const SPECIES_LIST = [
   { name: "עין חתול אדמדם", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "נחש כיפה", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "מחרוזן הטבעות", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+
+  // 23 לא ארסיים
   { name: "זעמן שחור", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "זעמן מטבעות", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "זעמן זיתני", label: "לא ארסי 💚", color: "#2ed573" },
@@ -354,7 +361,7 @@ const SPECIES_LIST = [
   { name: "נחש מים משובץ", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "חנק משריץ", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "נחש חולות חרטומן", label: "לא ארסי 💚", color: "#2ed573" },
-  { name: "שחור ראש", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שחור ראש מצוי", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "שחור ראש דרומי", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "שלוון טלוא ראש", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "שלוון קווים", label: "לא ארסי 💚", color: "#2ed573" },
@@ -373,12 +380,36 @@ let wrongAttempts = 0;
 let streak = 0;
 let isRoundActive = false;
 
+// --- מנגנון ניהול תור ללא חזרות (Fisher-Yates Shuffle) ---
+let snakeDeck = [];
+let currentIndexInDeck = 0;
+
+function resetAndShuffleDeck() {
+  snakeDeck = [...SPECIES_LIST];
+  for (let i = snakeDeck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [snakeDeck[i], snakeDeck[j]] = [snakeDeck[j], snakeDeck[i]];
+  }
+  currentIndexInDeck = 0;
+}
+
 const canvas = document.getElementById("gallows-canvas");
 const ctx = canvas.getContext("2d");
 
 function normalizeChar(ch) {
   const map = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
   return map[ch] || ch;
+}
+
+function getLetterVariants(normChar) {
+  const reverseMap = {
+    'כ': ['כ', 'ך'],
+    'מ': ['מ', 'ם'],
+    'נ': ['נ', 'ן'],
+    'פ': ['פ', 'ף'],
+    'צ': ['צ', 'ץ']
+  };
+  return reverseMap[normChar] || [normChar];
 }
 
 function drawGallows(step) {
@@ -425,7 +456,6 @@ function drawGallows(step) {
   ctx.stroke();
 }
 
-// פריסת מקלדת ווטסאפ (פ מימין עד ק משמאל וכו')
 const KB_LAYOUT = [
   ["פ", "ם", "ן", "ו", "ט", "א", "ר", "ק"],
   ["ף", "ך", "ל", "ח", "י", "ע", "כ", "ג", "ד", "ש"],
@@ -457,7 +487,17 @@ function startNewRound() {
   wrongAttempts = 0;
   isRoundActive = true;
 
-  currentSnake = SPECIES_LIST[Math.floor(Math.random() * SPECIES_LIST.length)];
+  // בדיקה אם סיימנו את כל 41 הנחשים בסבב
+  if (currentIndexInDeck >= snakeDeck.length) {
+    resetAndShuffleDeck();
+  }
+
+  // שליפת הנחש הבא בתור ללא חזרות
+  currentSnake = snakeDeck[currentIndexInDeck];
+  currentIndexInDeck++;
+
+  // עדכון מונה בראש העמוד
+  document.getElementById("round-indicator").textContent = `נחש: ${currentIndexInDeck}/${SPECIES_LIST.length}`;
 
   const imgEl = document.getElementById("snake-image");
   const enc = encodeURIComponent(currentSnake.name.trim());
@@ -530,15 +570,22 @@ function handleLetterGuess(letter) {
 
   guessedLetters.add(norm);
 
-  const btn = document.getElementById(`key-${letter}`);
   const targetNormalized = Array.from(currentSnake.name).map(normalizeChar);
+  const isMatch = targetNormalized.includes(norm);
+  const variants = getLetterVariants(norm);
 
-  if (targetNormalized.includes(norm)) {
-    if (btn) btn.classList.add("correct");
+  variants.forEach(v => {
+    const btn = document.getElementById(`key-${v}`);
+    if (btn) {
+      btn.classList.add(isMatch ? "correct" : "wrong");
+      btn.disabled = true;
+    }
+  });
+
+  if (isMatch) {
     Sounds.correct();
     updateWordDisplay();
   } else {
-    if (btn) btn.classList.add("wrong");
     Sounds.wrong();
     wrongAttempts++;
     drawGallows(wrongAttempts);
@@ -548,8 +595,6 @@ function handleLetterGuess(letter) {
       endRound(false);
     }
   }
-
-  if (btn) btn.disabled = true;
 }
 
 function endRound(isWin) {
@@ -557,19 +602,31 @@ function endRound(isWin) {
   const modal = document.getElementById("end-modal");
   const title = document.getElementById("modal-title");
   const desc = document.getElementById("modal-desc");
+  const btn = document.getElementById("modal-btn");
+
+  const isFinalSnake = (currentIndexInDeck >= SPECIES_LIST.length);
 
   if (isWin) {
     streak++;
     Sounds.win();
-    title.textContent = "🏆 זיהוי מדויק!";
-    title.style.color = "#00ffcc";
-    desc.textContent = `כל הכבוד! הנחש הוא: ${currentSnake.name}`;
+    if (isFinalSnake) {
+      title.textContent = "👑 אלוף הנחשים של ישראל!";
+      title.style.color = "#ffd166";
+      desc.textContent = `זיהית את הנחש: ${currentSnake.name}. סיימת את כל 41 נחשי ישראל!`;
+      btn.textContent = "סבב חדש מאופס";
+    } else {
+      title.textContent = "🏆 זיהוי מדויק!";
+      title.style.color = "#00ffcc";
+      desc.textContent = `כל הכבוד! הנחש הוא: ${currentSnake.name}`;
+      btn.textContent = "לנחש הבא";
+    }
   } else {
     streak = 0;
     Sounds.lose();
     title.textContent = "☠️ נפסלת!";
     title.style.color = "#ff4757";
     desc.textContent = `הנחש בתמונה היה: ${currentSnake.name}`;
+    btn.textContent = isFinalSnake ? "סבב חדש מאופס" : "לנחש הבא";
     revealFullWord();
   }
 
@@ -597,6 +654,8 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+// אתחול החבילה והתחלת סיבוב ראשון
+resetAndShuffleDeck();
 startNewRound();
 </script>
 </body>
