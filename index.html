@@ -181,7 +181,7 @@
     .key-btn.correct { background: #2ed573 !important; color: #000 !important; }
     .key-btn.wrong { background: #ff4757 !important; color: #fff !important; }
 
-    /* סגנונות שלב השאלות (Quiz) */
+    /* סגנונות מבחן סיווג */
     .quiz-header {
       text-align: center;
       margin-bottom: 15px;
@@ -234,7 +234,7 @@
     }
     .quiz-status { font-size: 14px; color: #ffd166; font-weight: bold; }
 
-    /* פופאפ סיום */
+    /* פופאפ תוצאות */
     #end-modal {
       display: none;
       position: fixed;
@@ -338,7 +338,7 @@
   <div class="tag-container" id="tag-container"></div>
 
   <div class="quiz-footer">
-    <div class="quiz-status" id="quiz-selected-count">סומנו: 0</div>
+    <div class="quiz-status" id="quiz-selected-count">סומנו: 0 מתוך 9</div>
     <button class="btn-action" id="quiz-next-btn" onclick="handleQuizNext()">לשאלה הבאה ⇦</button>
   </div>
 </div>
@@ -437,7 +437,7 @@ document.getElementById("sound-toggle").addEventListener("click", () => {
   document.getElementById("sound-toggle").textContent = soundEnabled ? "🔊" : "🔇";
 });
 
-// רשימת 41 נחשי ישראל
+// רשימת 41 נחשי ישראל: 9 ארסיים, 9 תת-ארסיים, 23 לא ארסיים
 const SPECIES_LIST = [
   // 9 ארסיים
   { name: "צפע מצוי", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
@@ -450,7 +450,7 @@ const SPECIES_LIST = [
   { name: "שרף עין גדי", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
   { name: "פתן שחור", type: "venomous", label: "ארסי ☠️", color: "#ff3838" },
 
-  // 8 תת-ארסיים
+  // 9 תת-ארסיים (כולל נחש כיפה)
   { name: "תלום קשקשים מצוי", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "תלום קשקשים מדברי", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "ארבע קו מובהק", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
@@ -458,10 +458,10 @@ const SPECIES_LIST = [
   { name: "עין חתול חברבר", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "עין חתול אפור", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "עין חתול אדמדם", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "נחש כיפה", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
   { name: "מחרוזן הטבעות", type: "semi", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
 
-  // 24 לא ארסיים
-  { name: "נחש כיפה", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
+  // 23 לא ארסיים
   { name: "זעמן שחור", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "זעמן מטבעות", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
   { name: "זעמן זיתני", type: "non", label: "לא ארסי 💚", color: "#2ed573" },
@@ -493,7 +493,7 @@ let guessedLetters = new Set();
 let wrongAttempts = 0;
 let isRoundActive = false;
 
-let hangmanScore = 0; // ניקוד תליין מצטבר (עד 41)
+let hangmanScore = 0;
 let snakeDeck = [];
 let currentIndexInDeck = 0;
 
@@ -602,7 +602,6 @@ function startNewRound() {
   isRoundActive = true;
 
   if (currentIndexInDeck >= snakeDeck.length) {
-    // השחקן סיים את כל 41 הנחשים! עוברים אוטומטית למבחן המסכם
     switchToQuiz();
     return;
   }
@@ -783,7 +782,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 // ==========================================
-// מנוע שלב ב': המבחן המסכם (3 שאלות סיווג)
+// מנוע המבחן המסכם (חישוב נקודות מתוקן ומדויק)
 // ==========================================
 const QUIZ_QUESTIONS = [
   {
@@ -796,16 +795,16 @@ const QUIZ_QUESTIONS = [
   {
     type: "semi",
     title: "שאלה 2 מתוך 3: נחשים תת-ארסיים",
-    desc: "סמן את כל 8 הנחשים התת-ארסיים של ישראל מתוך הרשימה:",
+    desc: "סמן את כל 9 הנחשים התת-ארסיים של ישראל מתוך הרשימה:",
     maxPoints: 20,
-    expectedCount: 8
+    expectedCount: 9
   },
   {
     type: "non",
     title: "שאלה 3 מתוך 3: נחשים לא-ארסיים",
-    desc: "סמן את כל 24 הנחשים הלא-ארסיים של ישראל מתוך הרשימה:",
+    desc: "סמן את כל 23 הנחשים הלא-ארסיים של ישראל מתוך הרשימה:",
     maxPoints: 30,
-    expectedCount: 24
+    expectedCount: 23
   }
 ];
 
@@ -836,7 +835,6 @@ function loadQuizQuestion(qIdx) {
   const container = document.getElementById("tag-container");
   container.innerHTML = "";
 
-  // בנק שמות ממוין לפי א'-ב' לבחירה נוחה
   const sortedSnakes = [...SPECIES_LIST].sort((a,b) => a.name.localeCompare(b.name, 'he'));
   const currentSet = userQuizSelections[q.type];
 
@@ -867,24 +865,23 @@ function updateQuizCounter() {
 }
 
 function handleQuizNext() {
-  // חישוב ניקוד לשאלה הנוכחית
   const q = QUIZ_QUESTIONS[currentQuizIdx];
   const chosen = userQuizSelections[q.type];
   const correctSpecies = SPECIES_LIST.filter(s => s.type === q.type).map(s => s.name);
   
+  // ספירת תשובות נכונות
   let correctHits = 0;
-  let wrongHits = 0;
-
   chosen.forEach(name => {
-    if (correctSpecies.includes(name)) correctHits++;
-    else wrongHits++;
+    if (correctSpecies.includes(name)) {
+      correctHits++;
+    }
   });
 
-  // ציון יחסי לשאלה
-  let rawScore = (correctHits - (wrongHits * 0.5));
-  if (rawScore < 0) rawScore = 0;
-  const finalQuestionScore = Math.round((rawScore / q.expectedCount) * q.maxPoints * 10) / 10;
-  quizScores[q.type] = Math.min(q.maxPoints, finalQuestionScore);
+  // חישוב יחסי נקי: (תשובות נכונות / סה"כ נחשים בקטגוריה) * נקודות לשאלה
+  let calculatedScore = (correctHits / q.expectedCount) * q.maxPoints;
+  // עיגול לספרה אחת אחרי הנקודה (או מספר שלם אם מושלם)
+  calculatedScore = Math.round(calculatedScore * 10) / 10;
+  quizScores[q.type] = Math.min(q.maxPoints, calculatedScore);
 
   currentQuizIdx++;
   if (currentQuizIdx < QUIZ_QUESTIONS.length) {
