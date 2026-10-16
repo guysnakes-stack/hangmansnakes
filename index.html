@@ -7,35 +7,30 @@
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
     
-    html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      background: #05080c;
-    }
-
     body {
+      margin: 0;
+      padding: 10px;
       background: radial-gradient(circle at center, #0f1923, #05080c);
       color: #e0fbfc;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
     }
 
     #game-container {
       width: 100%;
-      max-width: 850px;
-      height: 100%;
-      max-height: 850px;
+      max-width: 800px;
       background: #080d13;
       border: 2px solid #1f3548;
       border-radius: 16px;
       box-shadow: 0 0 25px rgba(0, 255, 204, 0.1);
-      padding: 12px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
     }
 
     header {
@@ -44,14 +39,15 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #1f3548;
-      padding-bottom: 6px;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
     }
-    h1 { margin: 0; font-size: 19px; color: #00ffcc; text-shadow: 0 0 10px rgba(0,255,204,0.3); }
+    h1 { margin: 0; font-size: 20px; color: #00ffcc; text-shadow: 0 0 10px rgba(0,255,204,0.3); }
     
     .header-controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .score-board { font-size: 14px; font-weight: bold; color: #ffd166; }
     
@@ -60,27 +56,24 @@
       border: 1px solid #2d4a65;
       color: #00ffcc;
       border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 13px;
+      padding: 5px 10px;
+      font-size: 14px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 3px;
     }
 
     .top-section {
       display: flex;
-      gap: 12px;
+      gap: 15px;
       width: 100%;
       justify-content: center;
       align-items: center;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
     .snake-card {
       width: 220px;
       height: 155px;
-      max-width: 60%;
       background: #121c27;
       border-radius: 10px;
       border: 3px solid #2ed573;
@@ -117,53 +110,55 @@
 
     .word-container {
       display: flex;
-      gap: 5px;
-      margin: 8px 0;
+      gap: 6px;
+      margin: 12px 0;
       flex-wrap: wrap;
       justify-content: center;
       direction: rtl;
     }
     .letter-slot {
-      width: 28px;
-      height: 36px;
+      width: 30px;
+      height: 38px;
       border-bottom: 3px solid #00ffcc;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 900;
       color: #ffffff;
     }
-    .letter-slot.space { border-bottom: none; width: 10px; }
+    .letter-slot.space { border-bottom: none; width: 12px; }
 
     .attempts-info {
       font-size: 14px;
-      margin-bottom: 6px;
+      margin-bottom: 14px;
       color: #a8dadc;
     }
     .attempts-count { color: #ff4757; font-weight: bold; font-size: 16px; }
 
-    /* מקלדת מסודרת מימין לשמאל */
+    /* עיצוב המקלדת */
     .keyboard {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px;
       width: 100%;
       max-width: 520px;
       direction: rtl;
+      margin-top: 5px;
     }
     .kb-row {
-      display: flex;
-      flex-direction: row;
+      display: flex !important;
+      flex-direction: row !important;
       justify-content: center;
-      gap: 4px;
+      gap: 5px;
       width: 100%;
-      direction: rtl;
     }
     .key-btn {
       flex: 1;
       max-width: 44px;
+      min-width: 32px;
       height: 44px;
+      min-height: 44px;
       border-radius: 6px;
       background: #1a2a3a;
       border: 1px solid #2d4a65;
@@ -255,7 +250,6 @@ fsBtn.addEventListener("click", () => {
     container.style.width = "100vw";
     container.style.height = "100vh";
     container.style.maxWidth = "100vw";
-    container.style.maxHeight = "100vh";
     container.style.zIndex = "999999";
     container.style.borderRadius = "0";
     fsBtn.textContent = "✕";
@@ -263,9 +257,8 @@ fsBtn.addEventListener("click", () => {
     container.style.position = "relative";
     container.style.inset = "auto";
     container.style.width = "100%";
-    container.style.height = "100%";
-    container.style.maxWidth = "850px";
-    container.style.maxHeight = "850px";
+    container.style.height = "auto";
+    container.style.maxWidth = "800px";
     container.style.zIndex = "auto";
     container.style.borderRadius = "16px";
     fsBtn.textContent = "⛶";
@@ -328,4 +321,283 @@ document.getElementById("sound-toggle").addEventListener("click", () => {
   document.getElementById("sound-toggle").textContent = soundEnabled ? "🔊" : "🔇";
 });
 
-// רשימת 4
+// רשימת 41 נחשי ישראל
+const SPECIES_LIST = [
+  { name: "צפע מצוי", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "צפע החרמון", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "אפעה מגוון", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "שפיפון הנגב", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "עכן חרטומים", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "עכן גדול", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "עכן קטן", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "שרף עין גדי", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "פתן שחור", label: "ארסי ☠️", color: "#ff3838" },
+  { name: "תלום קשקשים מצוי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "תלום קשקשים מדברי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "ארבע קו מובהק", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "ארבע קו מצרי", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "עין חתול חברבר", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "עין חתול אפור", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "עין חתול אדמדם", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "נחש כיפה", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "מחרוזן הטבעות", label: "תת-ארסי ⚠️", color: "#ff9f1a" },
+  { name: "זעמן שחור", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן מטבעות", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן זיתני", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן יפהפה", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן דק", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן סיני", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "זעמן אוכפים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "מטבעון מדבר", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "כרכן חלק", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "כרכן קרינים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחש מים משובץ", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "חנק משריץ", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחש חולות חרטומן", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שחור ראש מצוי", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שחור ראש דרומי", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון טלוא ראש", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון קווים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון קולר", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון כתמים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "שלוון אזורים", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחשיל מצוי", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נחשיל חד ראש", label: "לא ארסי 💚", color: "#2ed573" },
+  { name: "נימון דק", label: "לא ארסי 💚", color: "#2ed573" }
+];
+
+const MAX_MISTAKES = 4;
+let currentSnake = null;
+let guessedLetters = new Set();
+let wrongAttempts = 0;
+let streak = 0;
+let isRoundActive = false;
+
+const canvas = document.getElementById("gallows-canvas");
+const ctx = canvas.getContext("2d");
+
+function normalizeChar(ch) {
+  const map = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+  return map[ch] || ch;
+}
+
+function drawGallows(step) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "#00ffcc";
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+
+  ctx.beginPath();
+  ctx.moveTo(12, 140);
+  ctx.lineTo(122, 140);
+  ctx.moveTo(35, 140);
+  ctx.lineTo(35, 15);
+  ctx.lineTo(90, 15);
+  ctx.lineTo(90, 32);
+  ctx.stroke();
+
+  if (step < 1) return;
+  ctx.strokeStyle = "#ff4757";
+  ctx.beginPath();
+  ctx.arc(90, 44, 12, 0, Math.PI * 2);
+  ctx.stroke();
+
+  if (step < 2) return;
+  ctx.beginPath();
+  ctx.moveTo(90, 56);
+  ctx.lineTo(90, 92);
+  ctx.stroke();
+
+  if (step < 3) return;
+  ctx.beginPath();
+  ctx.moveTo(90, 66);
+  ctx.lineTo(72, 82);
+  ctx.moveTo(90, 66);
+  ctx.lineTo(108, 82);
+  ctx.stroke();
+
+  if (step < 4) return;
+  ctx.beginPath();
+  ctx.moveTo(90, 92);
+  ctx.lineTo(72, 120);
+  ctx.moveTo(90, 92);
+  ctx.lineTo(108, 120);
+  ctx.stroke();
+}
+
+// פריסת מקלדת ווטסאפ (פ מימין עד ק משמאל וכו')
+const KB_LAYOUT = [
+  ["פ", "ם", "ן", "ו", "ט", "א", "ר", "ק"],
+  ["ף", "ך", "ל", "ח", "י", "ע", "כ", "ג", "ד", "ש"],
+  ["ץ", "ת", "צ", "מ", "נ", "ה", "ב", "ס", "ז"]
+];
+
+function buildKeyboard() {
+  const container = document.getElementById("keyboard");
+  if (!container) return;
+  container.innerHTML = "";
+  KB_LAYOUT.forEach(row => {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "kb-row";
+    row.forEach(letter => {
+      const btn = document.createElement("button");
+      btn.className = "key-btn";
+      btn.id = `key-${letter}`;
+      btn.textContent = letter;
+      btn.onclick = () => handleLetterGuess(letter);
+      rowDiv.appendChild(btn);
+    });
+    container.appendChild(rowDiv);
+  });
+}
+
+function startNewRound() {
+  document.getElementById("end-modal").style.display = "none";
+  guessedLetters.clear();
+  wrongAttempts = 0;
+  isRoundActive = true;
+
+  currentSnake = SPECIES_LIST[Math.floor(Math.random() * SPECIES_LIST.length)];
+
+  const imgEl = document.getElementById("snake-image");
+  const enc = encodeURIComponent(currentSnake.name.trim());
+  const raw = currentSnake.name.trim();
+
+  const candidates = [
+    `images/${enc}.jpg`,
+    `images/${enc}.JPG`,
+    `images/${raw}.jpg`,
+    `images/${raw}.JPG`,
+    `images/${enc}.png`,
+    `images/${raw}.png`
+  ];
+
+  let cIdx = 0;
+  function tryLoad() {
+    if (cIdx < candidates.length) {
+      imgEl.src = candidates[cIdx++];
+    }
+  }
+
+  imgEl.onerror = tryLoad;
+  tryLoad();
+
+  const tagEl = document.getElementById("species-tag");
+  tagEl.textContent = `רמז: ${currentSnake.label}`;
+  tagEl.style.color = currentSnake.color;
+  document.getElementById("snake-card").style.borderColor = currentSnake.color;
+
+  updateWordDisplay();
+  drawGallows(0);
+  document.getElementById("remaining-attempts").textContent = MAX_MISTAKES;
+  buildKeyboard();
+}
+
+function updateWordDisplay() {
+  const container = document.getElementById("word-container");
+  container.innerHTML = "";
+  const name = currentSnake.name;
+  let allRevealed = true;
+
+  for (let i = 0; i < name.length; i++) {
+    const ch = name[i];
+    const slot = document.createElement("div");
+
+    if (ch === " ") {
+      slot.className = "letter-slot space";
+    } else {
+      slot.className = "letter-slot";
+      const normalizedCh = normalizeChar(ch);
+      if (guessedLetters.has(normalizedCh)) {
+        slot.textContent = ch;
+      } else {
+        slot.textContent = "";
+        allRevealed = false;
+      }
+    }
+    container.appendChild(slot);
+  }
+
+  if (allRevealed && isRoundActive) {
+    endRound(true);
+  }
+}
+
+function handleLetterGuess(letter) {
+  if (!isRoundActive) return;
+  const norm = normalizeChar(letter);
+  if (guessedLetters.has(norm)) return;
+
+  guessedLetters.add(norm);
+
+  const btn = document.getElementById(`key-${letter}`);
+  const targetNormalized = Array.from(currentSnake.name).map(normalizeChar);
+
+  if (targetNormalized.includes(norm)) {
+    if (btn) btn.classList.add("correct");
+    Sounds.correct();
+    updateWordDisplay();
+  } else {
+    if (btn) btn.classList.add("wrong");
+    Sounds.wrong();
+    wrongAttempts++;
+    drawGallows(wrongAttempts);
+    document.getElementById("remaining-attempts").textContent = MAX_MISTAKES - wrongAttempts;
+
+    if (wrongAttempts >= MAX_MISTAKES) {
+      endRound(false);
+    }
+  }
+
+  if (btn) btn.disabled = true;
+}
+
+function endRound(isWin) {
+  isRoundActive = false;
+  const modal = document.getElementById("end-modal");
+  const title = document.getElementById("modal-title");
+  const desc = document.getElementById("modal-desc");
+
+  if (isWin) {
+    streak++;
+    Sounds.win();
+    title.textContent = "🏆 זיהוי מדויק!";
+    title.style.color = "#00ffcc";
+    desc.textContent = `כל הכבוד! הנחש הוא: ${currentSnake.name}`;
+  } else {
+    streak = 0;
+    Sounds.lose();
+    title.textContent = "☠️ נפסלת!";
+    title.style.color = "#ff4757";
+    desc.textContent = `הנחש בתמונה היה: ${currentSnake.name}`;
+    revealFullWord();
+  }
+
+  document.getElementById("streak").textContent = streak;
+  modal.style.display = "flex";
+}
+
+function revealFullWord() {
+  const container = document.getElementById("word-container");
+  container.innerHTML = "";
+  for (let ch of currentSnake.name) {
+    const slot = document.createElement("div");
+    slot.className = ch === " " ? "letter-slot space" : "letter-slot";
+    slot.textContent = ch;
+    if (ch !== " ") slot.style.color = "#ff6b81";
+    container.appendChild(slot);
+  }
+}
+
+window.addEventListener("keydown", (e) => {
+  if (!isRoundActive) return;
+  const key = e.key;
+  if (/^[א-ת]$/.test(key)) {
+    handleLetterGuess(key);
+  }
+});
+
+startNewRound();
+</script>
+</body>
+</html>
